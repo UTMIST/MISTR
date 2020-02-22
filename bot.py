@@ -1,5 +1,5 @@
 """
-_.-={ UTDISC }=-._
+_.-={ bot.py }=-._
 
 This is the main bot module. When run as __main__, it will attempt to load every
 cog in initial_extensions and will safely error if it isn't found.
@@ -7,16 +7,13 @@ cog in initial_extensions and will safely error if it isn't found.
 Prefix: >
 """
 
-
 import discord
 from discord.ext import commands
-
 
 with open('token') as t:
     token = t.read()
 
-initial_extensions = ['cogs.roles'
-                      'cogs.owner']
+initial_extensions = ['cogs.roles', 'cogs.owner']
 
 
 class UTBot(commands.Bot):
@@ -24,9 +21,10 @@ class UTBot(commands.Bot):
     guild: UTMist discord server
         type: Optional[discord.Guild]
     """
+
     def __init__(self):
         super().__init__(command_prefix='>',
-                         description="UTMIST's personal bot")
+                         description="UTMIST Assistant (MISTA)")
         self.guild_id = 673778422291628033
 
 
