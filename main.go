@@ -107,12 +107,12 @@ func gitlabPagesUpdate() string {
 	return reply
 }
 
-// 'On bot is ready' event
+// Bot is ready handler
 func ready(s *discord.Session, r *discord.Ready) {
 	s.UpdateStatus(0, "defragmenting disk...")
 }
 
-// Message created event
+// Message created handler
 func messageCreate(s *discord.Session, m *discord.MessageCreate) {
 	var message string
 	if m.Author.ID == s.State.User.ID {
@@ -136,4 +136,13 @@ func messageCreate(s *discord.Session, m *discord.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, reply)
 	}
 
+}
+
+// Message reaction handler
+func messageReact(s *discord.Session, m discord.MessageReactionAdd) {
+	// user, _ := s.User(m.UserID)
+	switch m.Emoji.Name {
+	case ":one:":
+
+	}
 }
