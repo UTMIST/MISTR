@@ -35,6 +35,7 @@ func main() {
 	botID := u.ID
 
 	// Add Handlers
+	dg.AddHandler(ready)
 	dg.AddHandler(messageCreate)
 
 	// Open client and run on a loop.
@@ -97,12 +98,14 @@ func gitlabPagesUpdate() {
 	log.Printf("Successfully rerun pipeline: %d as %d\n", pipeline.ID, newPipeline.ID)
 }
 
-func messageCreate(s *discord.Session, m *discord.MessageCreate) {
+func ready(s *discord.Session, r *discord.Ready) {
+	s.UpdateStatus(0, "defragmenting disk...")
+}
 
+func messageCreate(s *discord.Session, m *discord.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-
 	if m.Content[0:3] != prefix {
 		return
 	}
