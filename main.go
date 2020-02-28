@@ -9,7 +9,7 @@ import (
 	gitlab "github.com/xanzy/go-gitlab"
 )
 
-const gitlabPages = "mista glp"
+const prefix = "m! "
 const discordTokenEnv = "DISCORD_BOT_TOKEN"
 const gitlabTokenEnv = "GITLAB_TOKEN"
 const projectIDEnv = "PROJECT_ID"
@@ -34,18 +34,8 @@ func main() {
 	}
 	botID := u.ID
 
-	// Create local lambda function to handle messages. Add handler.
-	messageHandler := func(s *discord.Session, m *discord.MessageCreate) {
-		if m.Author.ID == botID {
-			return
-		}
-
-		switch m.Content {
-		case gitlabPages:
-			gitlabPagesUpdate()
-		}
-	}
-	dg.AddHandler(messageHandler)
+	// Add Handlers
+	dg.AddHandler(messageCreate)
 
 	// Open client and run on a loop.
 	if err = dg.Open(); err != nil {
@@ -105,4 +95,21 @@ func gitlabPagesUpdate() {
 	}
 
 	log.Printf("Successfully rerun pipeline: %d as %d\n", pipeline.ID, newPipeline.ID)
+}
+
+func messageCreate(s *discord.Session, m *discord.MessageCreate) {
+
+	if m.Author.ID == s.State.User.ID {
+		return
+	}
+
+	if m.Content[0:3] != prefix {
+		return
+	}
+
+	switch m.Content[3:] {
+	case "glp":
+		gitlabPagesUpdate()
+	}
+
 }
