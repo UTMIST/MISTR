@@ -1,18 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	discord "github.com/bwmarrin/discordgo"
 	dotenv "github.com/joho/godotenv"
 	gitlab "github.com/xanzy/go-gitlab"
 )
 
-const prefix = "m! "
+const guildID = "673778422291628033"
 const discordTokenEnv = "DISCORD_BOT_TOKEN"
 const gitlabTokenEnv = "GITLAB_TOKEN"
 const projectIDEnv = "PROJECT_ID"
+
+var prefixes = []string {"mista! ", "m! "}
 
 func main() {
 	if err := dotenv.Load(); err != nil {
@@ -48,19 +52,22 @@ func main() {
 	return
 }
 
-func gitlabPagesUpdate() {
+func gitlabPagesUpdate() string {
+	var reply string
 	log.Println("Running CI for GitLab Pages...")
 
 	// Look for the two environment variables.
 	token, exists := os.LookupEnv(gitlabTokenEnv)
 	if !exists {
-		log.Println("No discord bot token found.")
-		return
+		reply = "No discord bot token found."
+		log.Println(reply)
+		return reply
 	}
 	projectID, exists := os.LookupEnv(projectIDEnv)
 	if !exists {
-		log.Println("No GitLab project ID found.")
-		return
+		reply = "No GitLab project ID found."
+		log.Println(reply)
+		return reply
 	}
 
 	// Set up GL Client
@@ -79,6 +86,7 @@ func gitlabPagesUpdate() {
 	pipeline := pipelines[0]
 	log.Printf("Found successful pipeline: %d\n", pipeline.ID)
 
+
 	// Get variables of last successful pipeline on master.
 	vars, _, err := git.Pipelines.GetPipelineVariables(projectID, pipeline.ID)
 	if err != nil {
@@ -94,8 +102,9 @@ func gitlabPagesUpdate() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	log.Printf("Successfully rerun pipeline: %d as %d\n", pipeline.ID, newPipeline.ID)
+	reply = fmt.Sprintf("Successfully rerun pipeline: %d as %d\n", pipeline.ID, newPipeline.ID)
+	log.Print(reply)
+	return reply
 }
 
 // 'On bot is ready' event
@@ -105,17 +114,26 @@ func ready(s *discord.Session, r *discord.Ready) {
 
 // Message created event
 func messageCreate(s *discord.Session, m *discord.MessageCreate) {
+	var message string
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	// Check if prefix is used.
-	if m.Content[0:3] != prefix {
+	if m.GuildID != guildID {
 		return
 	}
+	for _, p := range prefixes {
+		if strings.HasPrefix(m.Content, p) {
+			message = strings.TrimPrefix(m.Content, p)
+		}
+	}
+	// message exists iff prefix was detected
+	if len(message) == 0 {
+		return}
 
-	switch m.Content[3:] {
+	switch message {
 	case "glp":
-		gitlabPagesUpdate()
+		reply := gitlabPagesUpdate()
+		s.ChannelMessageSend(m.ChannelID, reply)
 	}
 
 }
