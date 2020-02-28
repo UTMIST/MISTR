@@ -98,14 +98,17 @@ func gitlabPagesUpdate() {
 	log.Printf("Successfully rerun pipeline: %d as %d\n", pipeline.ID, newPipeline.ID)
 }
 
+// 'On bot is ready' event
 func ready(s *discord.Session, r *discord.Ready) {
 	s.UpdateStatus(0, "defragmenting disk...")
 }
 
+// Message created event
 func messageCreate(s *discord.Session, m *discord.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
+	// Check if prefix is used.
 	if m.Content[0:3] != prefix {
 		return
 	}
