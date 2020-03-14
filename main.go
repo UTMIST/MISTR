@@ -3,20 +3,82 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
-	gitlab "gitlab.com/utmist/mista/gitlab"
-
 	discord "github.com/bwmarrin/discordgo"
 	dotenv "github.com/joho/godotenv"
+	gitlab "gitlab.com/utmist/mista/gitlab"
 )
 
 const guildID = "673778422291628033"
 const discordTokenEnv = "DISCORD_BOT_TOKEN"
 
-var prefixes = []string{"mista!", "m!"}
+var rolesMessageID string
+var prefixes = []string{"mista! ", "m! "}
+var emojis = []string{
+	"3️⃣",
+	"2️⃣",
+	"1️⃣",
+	"🦝",
+	"🦅",
+	"🍁",
+	"🎲",
+	"⚖️",
+	"🔎",
+	"🧮",
+	"💻",
+	"🧠",
+	"🔌",
+	"👨‍🔬",
+}
+var roleIDs = []string{
+	"678759295998885888", // :three: 2T3
+	"678759268845092864", // :two: 2T2
+	"678759179967528961", // :one: 2T1
+	"678847616691208203", // :raccoon: UTSC
+	"678847667190890496", // :eagle: UTM
+	"683102967582294037", // :maple_leaf: UTSG
+	"678759570776260624", // :game_die: Stats
+	"678759600413212702", // :scales: Phys
+	"678842446683176980", // :mag_right: Phil
+	"678759542808379415", // :abacus: Math
+	"678759477008138252", // :computer: CompSci
+	"678764218094321685", // :brain: CogSci
+	"678759424705429518", // :electric_plug: ECE
+	"678759380589740040", // :man_scientist: EngSci
+}
+var roleMap = make(map[string]string)
+
+// Role add/remove helper
+func role(s *discord.Session, roles []string, authorID string, rID string, hasRole bool, msgID string) {
+	if len(rolesMessageID) == 0 || msgID != rolesMessageID {
+		return
+	}
+	if hasRole {
+		for _, ID := range roles {
+			if ID == rID {
+				err := s.GuildMemberRoleRemove(guildID, authorID, rID)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+			}
+		}
+	} else {
+		for _, ID := range roles {
+			if ID == rID {
+				return
+			}
+		}
+		err := s.GuildMemberRoleAdd(guildID, authorID, rID)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
 
 // Bot is ready handler
 func ready(s *discord.Session, r *discord.Ready) {
@@ -47,8 +109,36 @@ func help() string {
 	return line
 }
 
+// Creates a designated reaction message for adding roles
+func deploy(s *discord.Session, m *discord.MessageCreate) {
+
+	str := "**Incoming Members**\n\n" +
+		"Please give yourself all applicable roles by reacting to this message.\n\n" +
+		"> add reaction => assign role\n" +
+		"> remove reaction => unassign role\n\n"
+	for _, r := range emojis {
+		role, _ := s.State.Role(guildID, roleMap[r])
+		str += r + ": " + role.Name + "\n"
+	}
+	message, _ := s.ChannelMessageSend(m.ChannelID, str)
+	for _, r := range emojis {
+		s.MessageReactionAdd(message.ChannelID, message.ID, r)
+	}
+	file, err := os.Create("roles-id.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = file.WriteString(message.ID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	rolesMessageID = message.ID
+}
+
 // Message created handler
 func messageCreate(s *discord.Session, m *discord.MessageCreate) {
+
 	var message string
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -70,25 +160,33 @@ func messageCreate(s *discord.Session, m *discord.MessageCreate) {
 	}
 
 	// Switch on message for reply.
-	var reply string
 	switch message {
-	case " update":
-		reply = gitlab.PagesUpdate()
-	default:
-		reply = help()
+	case "update":
+		s.ChannelMessageSend(m.ChannelID, gitlab.PagesUpdate())
+	case "deploy":
+		deploy(s, m)
+	case "help":
+		s.ChannelMessageSend(m.ChannelID, help())
 	}
-
-	s.ChannelMessageSend(m.ChannelID, reply)
 
 }
 
-// Message reaction handler
-func messageReact(s *discord.Session, m discord.MessageReactionAdd) {
-	// user, _ := s.User(m.UserID)
-	switch m.Emoji.Name {
-	case ":one:":
-
+// Message add reaction handler
+func messageAddReact(s *discord.Session, m *discord.MessageReactionAdd) {
+	if m.UserID == s.State.User.ID {
+		return
 	}
+	member, _ := s.GuildMember(guildID, m.UserID)
+	role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], false, m.MessageID)
+}
+
+// Message remove reaction handler
+func messageRemoveReact(s *discord.Session, m *discord.MessageReactionRemove) {
+	if m.UserID == s.State.User.ID {
+		return
+	}
+	member, _ := s.GuildMember(guildID, m.UserID)
+	role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], true, m.MessageID)
 }
 
 func main() {
@@ -104,6 +202,18 @@ func main() {
 		return
 	}
 
+	// Building reaction: roleID map
+	for i := 0; i < len(roleIDs); i++ {
+		roleMap[emojis[i]] = roleIDs[i]
+	}
+
+	r, err := ioutil.ReadFile("roles-id.txt")
+	if err != nil {
+		log.Println(err)
+	} else {
+		rolesMessageID = string(r)
+	}
+
 	// Get the bot's user.
 	u, err := dg.User("@me")
 	if err != nil {
@@ -114,6 +224,8 @@ func main() {
 	// Add Handlers
 	dg.AddHandler(ready)
 	dg.AddHandler(messageCreate)
+	dg.AddHandler(messageAddReact)
+	dg.AddHandler(messageRemoveReact)
 
 	// Open client and run on a loop.
 	if err = dg.Open(); err != nil {
