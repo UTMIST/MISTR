@@ -43,6 +43,28 @@ func LoadRoleIDs() {
 	}
 }
 
+// Roles creates a designated reaction message for adding roles.
+func Roles(s *discordgo.Session, m *discordgo.MessageCreate) {
+	str := "**Roles**\n\n" +
+		"Please give yourself all applicable roles by reacting to this message.\n\n" +
+		"> add reaction: assign role\n" +
+		"> remove reaction: unassign role\n\n"
+
+	for _, r := range emoji {
+		role, _ := s.State.Role(guildID, roleMap[r])
+		str += r + ": " + role.Name + "\n"
+	}
+
+	message, _ := s.ChannelMessageSend(m.ChannelID, str)
+	for _, r := range emoji {
+		s.MessageReactionAdd(message.ChannelID, message.ID, r)
+	}
+
+	RewriteRolesMessageID(message.ID)
+
+	rolesMessageID = message.ID
+}
+
 // Role add/remove helper.
 func Role(s *discordgo.Session, roles []string, authorID, rID, msgID string, addRole bool) {
 	if len(rolesMessageID) == 0 || msgID != rolesMessageID {
