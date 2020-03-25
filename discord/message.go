@@ -14,13 +14,12 @@ import (
 // MessageCreate is the handler for when a message is created.
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	// If the bot and/or server don't match.
+	if m.Author.ID == s.State.User.ID || m.GuildID != guildID {
+		return
+	}
+
 	var message string
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-	if m.GuildID != guildID {
-		return
-	}
 
 	// Search for a matching prefix for alias.
 	for i, p := range prefixes {
@@ -35,11 +34,15 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+	// Return hostname.
 	if hostname, err := os.Hostname(); message == " host" && err == nil {
 		log.Println("Printing hostname.")
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("I'm running on %s.", hostname))
+		s.ChannelMessageSend(m.ChannelID,
+			fmt.Sprintf("I'm running on %s.", hostname))
 		return
 	}
+
+	// Other than hostname, return if the channel doesn't match environment.
 	if !correctChannel(m) {
 		return
 	}
@@ -47,11 +50,13 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Switch on message for reply.
 	switch message {
 	case " roles":
-		if rolesChannel, exists := os.LookupEnv("ROLES_CHANNEL"); exists && rolesChannel == m.ChannelID {
+		rolesChannel, exists := os.LookupEnv("ROLES_CHANNEL")
+		if exists && rolesChannel == m.ChannelID {
 			Roles(s, m)
 		}
 	case " update":
-		if updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL"); exists && updateChannel == m.ChannelID {
+		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
+		if exists && updateChannel == m.ChannelID {
 			s.ChannelMessageSend(m.ChannelID, gitlab.PagesUpdate())
 		}
 	case "":
@@ -64,21 +69,29 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 // MessageAddReact is the handler for when someone adds a react.
-func MessageAddReact(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+func MessageAddReact(s *discordgo.Session,
+	m *discordgo.MessageReactionAdd) {
+
+	// Don't act on the bot's reacts.
 	if m.UserID == s.State.User.ID {
 		return
 	}
+
 	member, _ := s.GuildMember(guildID, m.UserID)
-	Role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], m.MessageID, false)
+	Role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], m.MessageID, true)
 }
 
 // MessageRemoveReact is the handler for when someone removes a react.
-func MessageRemoveReact(s *discordgo.Session, m *discordgo.MessageReactionRemove) {
+func MessageRemoveReact(s *discordgo.Session,
+	m *discordgo.MessageReactionRemove) {
+
+	// Don't act on the bot's reacts.
 	if m.UserID == s.State.User.ID {
 		return
 	}
+
 	member, _ := s.GuildMember(guildID, m.UserID)
-	Role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], m.MessageID, true)
+	Role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], m.MessageID, false)
 }
 
 // Help returns MISTA's manual.
@@ -106,13 +119,18 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
 	s.ChannelMessageSend(m.ChannelID, line)
 }
 
+// Return whether the channel matches the environment.
 func correctChannel(m *discordgo.MessageCreate) bool {
+
+	// Check that environment variables.
 	env, envExists := os.LookupEnv("ENVIRONMENT")
 	devChannel, devChExists := os.LookupEnv("DEV_CHANNEL")
 	if !envExists || !devChExists {
-		log.Println("Missing env variables for DEV_CHANNEL and/or ENVIRONMENT")
+		log.Println("Missing env variables DEV_CHANNEL and/or ENVIRONMENT")
 		return false
 	}
+
+	// Check if channel matches environment.
 	inDev := env == "DEV" && m.ChannelID == devChannel
 	inProd := env != "DEV" && m.ChannelID != devChannel
 	if !inDev && !inProd {

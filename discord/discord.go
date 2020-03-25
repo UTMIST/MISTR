@@ -21,29 +21,31 @@ func Ready(s *discordgo.Session, r *discordgo.Ready) {
 
 // RewriteRolesMessageID rewrites .env with the new channel ID for roles.
 func RewriteRolesMessageID(messageID string) {
+
+	// Open .env and read lines into an array.
 	file, err := os.Open(".env")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	lines := []string{}
-
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.Index(line, "ROLES_MESSAGE") >= 0 {
-			line = fmt.Sprintf("%s=%s", line[:strings.Index(line, "=")], messageID)
+			line = fmt.Sprintf("%s=%s",
+				line[:strings.Index(line, "=")], messageID)
 		}
 		lines = append(lines, line)
 	}
 	file.Close()
 
+	// Rewrite .env.
 	file, err = os.Create(".env")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
-
 	for _, line := range lines {
 		fmt.Fprintln(file, line)
 	}
