@@ -62,6 +62,9 @@ func PagesUpdate() string {
 		log.Fatal(err)
 	}
 
+	// Delete the old pipeline.
+	git.Pipelines.DeletePipeline(projectID, pipeline.ID)
+
 	// Create and return successful reply.
 	reply := fmt.Sprintf("Successfully rerun pipeline: %d as %d\nSee %s.\n",
 		pipeline.ID,

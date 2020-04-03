@@ -43,7 +43,8 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Other than hostname, return if the channel doesn't match environment.
-	if !correctChannel(m) {
+	correct, inDev := correctChannel(m)
+	if !correct {
 		return
 	}
 
@@ -56,7 +57,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	case " update":
 		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
-		if exists && updateChannel == m.ChannelID {
+		if inDev || exists && (updateChannel == m.ChannelID) {
 			s.ChannelMessageSend(m.ChannelID, gitlab.PagesUpdate())
 		}
 	case "":
@@ -120,14 +121,14 @@ func Help(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 // Return whether the channel matches the environment.
-func correctChannel(m *discordgo.MessageCreate) bool {
+func correctChannel(m *discordgo.MessageCreate) (bool, bool) {
 
 	// Check that environment variables.
 	env, envExists := os.LookupEnv("ENVIRONMENT")
 	devChannel, devChExists := os.LookupEnv("DEV_CHANNEL")
 	if !envExists || !devChExists {
 		log.Println("Missing env variables DEV_CHANNEL and/or ENVIRONMENT")
-		return false
+		return false, false
 	}
 
 	// Check if channel matches environment.
@@ -135,8 +136,8 @@ func correctChannel(m *discordgo.MessageCreate) bool {
 	inProd := env != "DEV" && m.ChannelID != devChannel
 	if !inDev && !inProd {
 		log.Printf("Environment mismatch for %s.\n", env)
-		return false
+		return false, false
 	}
 
-	return true
+	return true, inDev
 }
