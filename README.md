@@ -8,7 +8,7 @@ The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot se
 
 - MISTA can manage server roles and permissions in our [Discord server](https://discord.gg/88mSPw8) using message reacts.
 - Our [website (utmist.gitlab.io)](https://utmist.gitlab.io) can be updated via MISTA on our server by triggering jobs for GitLab Pages CI running [utmist.gitlab.io](https://gitlab.com/utmist/utmist.gitlab.io).
-- MISTA also has Event, Prejct, and Media interfaces to provide resources and information on our server.
+- MISTA also has Event, Project, and Media interfaces to provide resources and information on our server.
 
 ### Prerequisites
 
