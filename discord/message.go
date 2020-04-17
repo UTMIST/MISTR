@@ -50,6 +50,11 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Switch on message for reply.
 	switch message {
+	case " flush":
+		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
+		if inDev || exists && (updateChannel == m.ChannelID) {
+			s.ChannelMessageSend(m.ChannelID, gitlab.PagesFlush())
+		}
 	case " roles":
 		rolesChannel, exists := os.LookupEnv("ROLES_CHANNEL")
 		if exists && rolesChannel == m.ChannelID {
