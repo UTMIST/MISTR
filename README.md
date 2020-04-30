@@ -26,6 +26,10 @@ The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot se
 - The bot is entirely run from `main.go`.
 - [Discord Invite Link](https://discordapp.com/oauth2/authorize?client_id=682495255102095391&scope=bot).
 
+### Continuous Deployment (CD)
+
+If you're looking to deploy MISTA continuously on a server or a local machine, run `loop.sh` in the project root directory. Then when you want to restart with new commits, type `mista! restart` in the appropriate Discord channel.
+
 ## Development
 
 - This project is maintained by the [Infrastructure Department at UTMIST](https://utmist.gitlab.io/team/infrastructure).
