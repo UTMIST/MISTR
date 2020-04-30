@@ -8,6 +8,7 @@ import (
 
 	discordgo "github.com/bwmarrin/discordgo"
 	"gitlab.com/utmist/mista/gitlab"
+	"gitlab.com/utmist/mista/update"
 )
 
 // MessageCreate is the handler for when a message is created.
@@ -67,8 +68,17 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case " restart":
 		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
 		if inDev || exists && (m.ChannelID == updateChannel) {
-			s.ChannelMessageSend(m.ChannelID, "I'm restarting and getting some upgrades :)")
-			log.Println("Restarting...")
+			if update.IsUpdated() {
+				s.ChannelMessageSend(m.ChannelID, "I'm already up to date :)")
+				return
+			}
+
+			reply := "I'm restarting and getting some upgrades :D"
+			if URL, exists := os.LookupEnv("REPO_URL"); exists {
+				reply = fmt.Sprintf("%s; see %s.", reply, URL)
+			}
+			s.ChannelMessageSend(m.ChannelID, reply)
+			log.Println(reply)
 			os.Exit(0)
 		}
 

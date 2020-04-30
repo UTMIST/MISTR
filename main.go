@@ -12,6 +12,7 @@ import (
 const discordTokenEnv = "DISCORD_BOT_TOKEN"
 
 func main() {
+
 	if err := dotenv.Load(); err != nil {
 		log.Println("Could not load .env")
 	}
