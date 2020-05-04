@@ -1,18 +1,16 @@
 # UTMIST Assistant (MISTA)
 
-![UTMIST Logo](logo.png)
-
-The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot serving the [UTMIST Discord server](https://discord.gg/88mSPw8).
+The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot serving the [UTMIST Discord server](https://discord.gg/ZxQjmW6).
 
 ## Overview
 
-- MISTA can manage server roles and permissions in our [Discord server](https://discord.gg/88mSPw8) using message reacts.
+- MISTA can manage server roles and permissions in our [Discord server](https://discord.gg/ZxQjmW6) using message reacts.
 - Our [website (utmist.gitlab.io)](https://utmist.gitlab.io) can be updated via MISTA on our server by triggering jobs for GitLab Pages CI running [utmist.gitlab.io](https://gitlab.com/utmist/utmist.gitlab.io).
 - MISTA also has Event, Project, and Media interfaces to provide resources and information on our server.
 
 ### Prerequisites
 
-- [Go](https://golang.org/).
+- [Go](https://golang.org/)
 
 ### Dependencies
 
@@ -22,7 +20,7 @@ The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot se
 ## Details
 
 - Run `sh go-get.sh` to download dependencies.
-- The `.env` file in the form of `.env.copy` is required to run this bot.
+- The `.env` file with the variables listed in `copy.env` is required to run this bot.
 - The bot is entirely run from `main.go`.
 - [Discord Invite Link](https://discordapp.com/oauth2/authorize?client_id=682495255102095391&scope=bot).
 
@@ -35,7 +33,7 @@ If you're looking to deploy MISTA continuously on a server or a local machine, r
 - This project is maintained by the [Infrastructure Department at UTMIST](https://utmist.gitlab.io/team/infrastructure).
   - [Robbert Liu](https://github.com/triglemon), Infrastructure Developer & MISTA Lead.
   - [Robert (Rupert) Wu](https://leglesslamb.gitlab.io), VP Infrastructure.
-- If you're a member of UTMIST and would like to contribute or learn development through this project, you can join our [Discord](https://discord.gg/88mSPw8)) and let us know in _#infrastructure_.
+- If you're a member of UTMIST and would like to contribute or learn development through this project, you can join our [Discord](https://discord.gg/ZxQjmW6)) and let us know in _#infrastructure_.
 
 ## Acknowledgements
 
