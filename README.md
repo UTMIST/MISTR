@@ -28,11 +28,11 @@ The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot se
 
 If you're looking to deploy MISTA continuously on a server or a local machine, run `loop.sh` in the project root directory. Then when you want to restart with new commits, type `mista! restart` in the appropriate Discord channel.
 
+UTMIST runs MISTA on a Raspberry Pi (of various models) using `loop.sh`.
+
 ## Development
 
-- This project is maintained by the [Infrastructure Department at UTMIST](https://utmist.gitlab.io/team/infrastructure).
-  - [Robbert Liu](https://github.com/triglemon), Infrastructure Developer & MISTA Lead.
-  - [Robert (Rupert) Wu](https://leglesslamb.gitlab.io), VP Infrastructure.
+- This project is maintained by the [Engineering Department at UTMIST](https://utmist.gitlab.io/team/engineering).
 - If you're a member of UTMIST and would like to contribute or learn development through this project, you can join our [Discord](https://discord.gg/ZxQjmW6)) and let us know in _#infrastructure_.
 
 ## Acknowledgements
