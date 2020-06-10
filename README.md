@@ -1,5 +1,8 @@
 # UTMIST Assistant (MISTA)
 
+![Minimum go version](https://img.shields.io/badge/go-1.11+-important.svg)
+![Go modules version](https://img.shields.io/github/go-mod/go-version/utmist/mista/master)
+
 The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot serving the [UTMIST Discord server](https://discord.gg/ZxQjmW6).
 
 ## Overview
@@ -10,7 +13,7 @@ The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot se
 
 ### Prerequisites
 
-- [Go](https://golang.org/)
+- [Go](https://golang.org/): minimum 1.11+; recommended 1.13+.
 
 ### Dependencies
 
@@ -19,9 +22,9 @@ The UofT Machine Intelligence Student Team Assistant (MISTA) is a Discord bot se
 
 ## Details
 
-- Run `sh go-get.sh` to download dependencies.
+- Dependencies are managed with [Go modules](https://blog.golang.org/using-go-modules).
 - The `.env` file with the variables listed in `copy.env` is required to run this bot.
-- The bot is entirely run from `main.go`.
+- The bot is run from `main.go`.
 - [Discord Invite Link](https://discordapp.com/oauth2/authorize?client_id=682495255102095391&scope=bot).
 
 ### Continuous Deployment (CD)
