@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	discordgo "github.com/bwmarrin/discordgo"
-	"gitlab.com/utmist/mista/gitlab"
-	"gitlab.com/utmist/mista/update"
+	"gitlab.com/utmist/mistr/gitlab"
+	"gitlab.com/utmist/mistr/update"
 )
 
 // MessageCreate is the handler for when a message is created.
@@ -55,11 +55,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if inDev || exists && (m.ChannelID == updateChannel) {
 			s.ChannelMessageSend(m.ChannelID, gitlab.PagesFlush())
 		}
-	case " roles":
-		rolesChannel, exists := os.LookupEnv("ROLES_CHANNEL")
-		if exists && m.ChannelID == rolesChannel {
-			Roles(s, m)
-		}
 	case " update":
 		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
 		if inDev || exists && (m.ChannelID == updateChannel) {
@@ -81,38 +76,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			log.Println(reply)
 			os.Exit(0)
 		}
-
-	case "":
-		help(s, m)
-	case " help":
-		help(s, m)
-	case " manual":
+	default:
 		help(s, m)
 	}
-}
-
-// MessageAddReact is the handler for when someone adds a react.
-func MessageAddReact(s *discordgo.Session,
-	m *discordgo.MessageReactionAdd) {
-
-	// Don't act on the bot's reacts.
-	if m.UserID == s.State.User.ID {
-		return
-	}
-
-	member, _ := s.GuildMember(guildID, m.UserID)
-	Role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], m.MessageID, true)
-}
-
-// MessageRemoveReact is the handler for when someone removes a react.
-func MessageRemoveReact(s *discordgo.Session,
-	m *discordgo.MessageReactionRemove) {
-
-	// Don't act on the bot's reacts.
-	if m.UserID == s.State.User.ID {
-		return
-	}
-
-	member, _ := s.GuildMember(guildID, m.UserID)
-	Role(s, member.Roles, m.UserID, roleMap[m.Emoji.Name], m.MessageID, false)
 }

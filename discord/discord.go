@@ -10,7 +10,7 @@ import (
 	discordgo "github.com/bwmarrin/discordgo"
 )
 
-var prefixes = []string{"mista!", "m!"}
+var prefixes = []string{"mistr!", "m!"}
 
 const guildID = "673778422291628033"
 

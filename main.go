@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	dotenv "github.com/joho/godotenv"
-	discord "gitlab.com/utmist/mista/discord"
+	discord "gitlab.com/utmist/mistr/discord"
 )
 
 const discordTokenEnv = "DISCORD_BOT_TOKEN"
@@ -32,13 +32,9 @@ func main() {
 	}
 	botID := u.ID
 
-	discord.LoadRoleIDs()
-
 	// Add Handlers
 	dg.AddHandler(discord.Ready)
 	dg.AddHandler(discord.MessageCreate)
-	dg.AddHandler(discord.MessageAddReact)
-	dg.AddHandler(discord.MessageRemoveReact)
 
 	// Open client and run on a loop.
 	if err = dg.Open(); err != nil {

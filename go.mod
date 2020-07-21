@@ -1,4 +1,4 @@
-module gitlab.com/utmist/mista
+module gitlab.com/utmist/mistr
 
 go 1.14
 
