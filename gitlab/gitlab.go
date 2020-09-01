@@ -14,6 +14,7 @@ const gitlabTokenEnv = "GITLAB_TOKEN"
 const projIDEnv = "PROJECT_ID"
 const websitePipelinesBase = "https://gitlab.com/utmist/utmist.gitlab.io/pipelines"
 
+// PagesClient returns GitLab client for the website.
 func PagesClient() (string, *goGitLab.Client) {
 	// Look for the two environment variables.
 	token, exists := os.LookupEnv(gitlabTokenEnv)
@@ -43,7 +44,6 @@ func PagesFlush() string {
 	projID, git := PagesClient()
 	listOpts := &goGitLab.ListProjectPipelinesOptions{
 		Status: goGitLab.BuildState(goGitLab.Success),
-		Ref:    goGitLab.String("master"),
 	}
 	pipelines, _, err := git.Pipelines.ListProjectPipelines(projID, listOpts)
 	if err != nil || len(pipelines) == 0 {
