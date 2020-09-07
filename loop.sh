@@ -1,5 +1,5 @@
 while true; do
-    pkill mista
+    pkill mistr
     go build
-    ./mista
+    ./mistr
 done
