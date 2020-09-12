@@ -1,16 +1,19 @@
 package gitlab
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
-	"time"
 
 	goGitLab "github.com/xanzy/go-gitlab"
 )
 
 const gitlabTokenEnv = "GITLAB_TOKEN"
+const jobIDFile = "jobs.txt"
 const projIDEnv = "PROJECT_ID"
 const websitePipelinesBase = "https://gitlab.com/utmist/utmist.gitlab.io/pipelines"
 
@@ -37,42 +40,43 @@ func PagesClient() (string, *goGitLab.Client) {
 	return projID, git
 }
 
+func getJobIDs() []int {
+	file, err := os.Open(jobIDFile)
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	var jobIDs []int
+	for scanner.Scan() {
+		id, err := strconv.Atoi(scanner.Text())
+		if err != nil {
+			continue
+		}
+		jobIDs = append(jobIDs, id)
+	}
+
+	return jobIDs
+}
+
 // PagesFlush cleans up the pipelines and their jobs in the CI.
 func PagesFlush() string {
 	log.Println("Flushing CI for GitLab Pages...")
 
-	projID, git := PagesClient()
-	listOpts := &goGitLab.ListProjectPipelinesOptions{
-		Status: goGitLab.BuildState(goGitLab.Success),
-	}
-	pipelines, _, err := git.Pipelines.ListProjectPipelines(projID, listOpts)
-	if err != nil || len(pipelines) == 0 {
+	cmd := exec.Command("sh", "pipelines.sh")
+	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
 
+	projID, git := PagesClient()
+	jobIDs := getJobIDs()
 	flushed := []string{}
-	skipped := []string{}
-	for _, pl := range pipelines {
-		jobs, _, err := git.Jobs.ListPipelineJobs(projID, pl.ID,
-			&goGitLab.ListJobsOptions{})
-		if err != nil {
-			continue
-		}
-
-		for _, job := range jobs {
-			if job.FinishedAt.Before(time.Now().AddDate(0, 0, -1)) {
-				git.Jobs.EraseJob(projID, job.ID)
-				flushed = append(flushed, fmt.Sprintf("%d", job.ID))
-				continue
-			}
-			log.Printf("Skipping %d; it's within last 24 h.", job.ID)
-			skipped = append(skipped, fmt.Sprintf("%d", job.ID))
-		}
+	for _, job := range jobIDs {
+		git.Jobs.EraseJob(projID, job)
+		flushed = append(flushed, fmt.Sprintf("%d", job))
 	}
 
-	return fmt.Sprintf("Skipped {%s}\nFlushed {%s}.",
-		strings.Join(skipped, ", "),
-		strings.Join(flushed, ", "))
+	return fmt.Sprintf("Flushed {%s}.", strings.Join(flushed, ", "))
 }
 
 // PagesUpdate reruns last successful pipeline on master for utmist.gitlab.io.
