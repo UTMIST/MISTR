@@ -3,10 +3,12 @@ package gitlab
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	goGitLab "github.com/xanzy/go-gitlab"
 )
@@ -42,7 +44,6 @@ func PagesClient() (string, *goGitLab.Client) {
 func getPipelineIDs(page int) []int {
 
 	cmd := exec.Command("sh", "pipelines.sh", fmt.Sprintf("%d", page))
-	fmt.Println("INDEX", page)
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -70,12 +71,12 @@ func PagesFlush() string {
 	log.Println("Flushing CI for GitLab Pages...")
 
 	projID, git := PagesClient()
+	pipelinePageCount := getPipelineStartingPage()
+
 	flushed := 0
-	pipelinePageCount := 1
 	pipelines := []int{0}
 	for len(pipelines) > 0 {
 		pipelines = getPipelineIDs(pipelinePageCount)
-		fmt.Println(pipelines)
 		for _, pipeline := range pipelines {
 			jobs, _, err := git.Jobs.ListPipelineJobs(
 				projID,
@@ -86,9 +87,8 @@ func PagesFlush() string {
 			}
 
 			for _, job := range jobs {
-				fmt.Println(job.ID)
 				if _, _, err := git.Jobs.EraseJob(projID, job.ID); err != nil {
-					// log.Println(err)
+					log.Println(err)
 				} else {
 					flushed++
 				}
@@ -99,7 +99,38 @@ func PagesFlush() string {
 		pipelinePageCount++
 	}
 
+	updatePipelineStartingPage(pipelinePageCount)
+
 	return fmt.Sprintf("Flushed %d jobs.", flushed)
+}
+
+func getPipelineStartingPage() int {
+	startingPage, err := strconv.Atoi(os.Getenv("PAGE_START"))
+	if err != nil {
+		log.Fatal(err)
+
+	}
+	return startingPage
+}
+
+func updatePipelineStartingPage(startingPage int) {
+	input, err := ioutil.ReadFile(".env")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	lines := strings.Split(string(input), "\n")
+
+	for i, line := range lines {
+		if strings.Contains(line, "PAGE_START") {
+			lines[i] = fmt.Sprintf("PAGE_START=%d", startingPage-1)
+		}
+	}
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(".env", []byte(output), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 // PagesUpdate reruns last successful pipeline on master for utmist.gitlab.io.
