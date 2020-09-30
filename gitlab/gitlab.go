@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 
 	goGitLab "github.com/xanzy/go-gitlab"
 )
@@ -40,7 +39,14 @@ func PagesClient() (string, *goGitLab.Client) {
 	return projID, git
 }
 
-func getJobIDs() []int {
+func getPipelineIDs(page int) []int {
+
+	cmd := exec.Command("sh", "pipelines.sh", fmt.Sprintf("%d", page))
+	fmt.Println("INDEX", page)
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+
 	file, err := os.Open(jobIDFile)
 	if err != nil {
 		log.Fatalf("failed opening file: %s", err)
@@ -63,20 +69,37 @@ func getJobIDs() []int {
 func PagesFlush() string {
 	log.Println("Flushing CI for GitLab Pages...")
 
-	cmd := exec.Command("sh", "pipelines.sh")
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-	}
-
 	projID, git := PagesClient()
-	jobIDs := getJobIDs()
-	flushed := []string{}
-	for _, job := range jobIDs {
-		git.Jobs.EraseJob(projID, job)
-		flushed = append(flushed, fmt.Sprintf("%d", job))
+	flushed := 0
+	pipelinePageCount := 1
+	pipelines := []int{0}
+	for len(pipelines) > 0 {
+		pipelines = getPipelineIDs(pipelinePageCount)
+		fmt.Println(pipelines)
+		for _, pipeline := range pipelines {
+			jobs, _, err := git.Jobs.ListPipelineJobs(
+				projID,
+				pipeline,
+				&goGitLab.ListJobsOptions{})
+			if err != nil {
+				continue
+			}
+
+			for _, job := range jobs {
+				fmt.Println(job.ID)
+				if _, _, err := git.Jobs.EraseJob(projID, job.ID); err != nil {
+					// log.Println(err)
+				} else {
+					flushed++
+				}
+			}
+			log.Printf("Flushed job traces for pipeline %d.\n", pipeline)
+		}
+
+		pipelinePageCount++
 	}
 
-	return fmt.Sprintf("Flushed {%s}.", strings.Join(flushed, ", "))
+	return fmt.Sprintf("Flushed %d jobs.", flushed)
 }
 
 // PagesUpdate reruns last successful pipeline on master for utmist.gitlab.io.
