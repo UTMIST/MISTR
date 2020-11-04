@@ -123,7 +123,8 @@ func updatePipelineStartingPage(startingPage int) {
 
 	for i, line := range lines {
 		if strings.Contains(line, "PAGE_START") {
-			lines[i] = fmt.Sprintf("PAGE_START=%d", startingPage-1)
+			lines[i] = fmt.Sprintf("PAGE_START=%d", startingPage-2)
+			break
 		}
 	}
 	output := strings.Join(lines, "\n")
