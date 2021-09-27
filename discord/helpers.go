@@ -2,6 +2,7 @@ package discord
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"fmt"
 	"log"
 	"os"
@@ -54,4 +55,11 @@ func correctChannel(m *discordgo.MessageCreate) (bool, bool) {
 	}
 
 	return true, inDev
+}
+
+// Return the hashed value for a string input
+func hashString(s *discordgo.Session, m *discordgo.MessageCreate, hashInput string) {
+
+	hashedValue := fmt.Sprintf("%x", sha256.Sum256([]byte(hashInput)))
+	s.ChannelMessageSend(m.ChannelID, hashedValue)
 }

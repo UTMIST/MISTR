@@ -48,19 +48,31 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	// clean up the message
+	message = strings.TrimSpace(message)
+
+	// parse messages into each substring for hash
+	subMessages := strings.Split(message, " ")
+
+	// handle prefix only
+	if len(subMessages) == 0 {
+		help(s, m)
+		return
+	}
+
 	// Switch on message for reply.
-	switch message {
-	case " flush":
+	switch subMessages[0] {
+	case "flush":
 		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
 		if inDev || exists && (m.ChannelID == updateChannel) {
 			s.ChannelMessageSend(m.ChannelID, gitlab.PagesFlush())
 		}
-	case " update":
+	case "update":
 		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
 		if inDev || exists && (m.ChannelID == updateChannel) {
 			s.ChannelMessageSend(m.ChannelID, gitlab.PagesUpdate())
 		}
-	case " restart":
+	case "restart":
 		updateChannel, exists := os.LookupEnv("UPDATE_CHANNEL")
 		if inDev || exists && (m.ChannelID == updateChannel) {
 			if update.IsUpdated() {
@@ -75,6 +87,15 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, reply)
 			log.Println(reply)
 			os.Exit(0)
+		}
+	case "hash":
+		botSandboxChannel, exists := os.LookupEnv("DEV_CHANNEL")
+		if exists && (m.ChannelID == botSandboxChannel) {
+			if len(subMessages) > 2 {
+				s.ChannelMessageSend(m.ChannelID, "Hash input should only contain one string, try again :P")
+				return
+			}
+			hashString(s, m, subMessages[1])
 		}
 	default:
 		help(s, m)
