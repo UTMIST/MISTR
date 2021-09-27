@@ -48,7 +48,7 @@ func correctChannel(m *discordgo.MessageCreate) (bool, bool) {
 
 	// Check if channel matches environment.
 	inDev := env == "DEV" && m.ChannelID == devChannel
-	inProd := env != "DEV" && m.ChannelID != devChannel
+	inProd := env != "DEV"
 	if !inDev && !inProd {
 		log.Printf("Environment mismatch for %s.\n", env)
 		return false, false
@@ -61,5 +61,6 @@ func correctChannel(m *discordgo.MessageCreate) (bool, bool) {
 func hashString(s *discordgo.Session, m *discordgo.MessageCreate, hashInput string) {
 
 	hashedValue := fmt.Sprintf("%x", sha256.Sum256([]byte(hashInput)))
+	log.Println("Printing hash.")
 	s.ChannelMessageSend(m.ChannelID, hashedValue)
 }
