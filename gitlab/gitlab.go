@@ -169,7 +169,7 @@ func PagesUpdate() string {
 	}
 
 	// Create and return successful reply.
-	reply := fmt.Sprintf("Successfully rerun pipeline: %d as %d\nSee %s.\n",
+	reply := fmt.Sprintf("Successfully rerun pipeline: %d as %d\nSee <%s>.\n",
 		pipeline.ID,
 		newPipeline.ID,
 		fmt.Sprintf("%s/%d", websitePipelinesBase, newPipeline.ID))

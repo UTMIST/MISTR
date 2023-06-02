@@ -14,7 +14,7 @@ var prefixes = []string{"mistr!", "m!"}
 
 const guildID = "673778422291628033"
 
-// Ready handler for when MISTA is active.
+// Ready handler for when MISTR is active.
 func Ready(s *discordgo.Session, r *discordgo.Ready) {
 	s.UpdateStatus(0, "training models...")
 }

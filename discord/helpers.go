@@ -10,7 +10,7 @@ import (
 	discordgo "github.com/bwmarrin/discordgo"
 )
 
-// Return MISTA's manual.
+// Return MISTR's manual.
 func help(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// Open and defer-close the file.

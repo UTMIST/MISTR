@@ -40,7 +40,7 @@ func main() {
 	if err = dg.Open(); err != nil {
 		log.Fatalln(err)
 	}
-	log.Printf("MISTA (ID: %s) is running...\n", botID)
+	log.Printf("MISTR (ID: %s) is running...\n", botID)
 	<-make(chan struct{})
 
 	return

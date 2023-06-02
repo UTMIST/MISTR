@@ -29,7 +29,7 @@ UTMIST runs MISTR on a Raspberry Pi (of various models) using `loop.sh`.
 
 ## Development
 
-- This project is maintained by the [Engineering Department at UTMIST](https://utmist.gitlab.io/engineering).
+- This project is maintained by the [Engineering Department at UTMIST](https://utmist.gitlab.io/team/infrastructure).
 - If you're a member of UTMIST and would like to contribute or learn development through this project, you can join our [Discord](https://discord.gg/88mSPw8)) and let us know in _#infrastructure_.
 
 ## Acknowledgements

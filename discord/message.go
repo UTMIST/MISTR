@@ -28,7 +28,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			break
 		}
 
-		// If none of the prefixes match, it's not a message for MISTA.
+		// If none of the prefixes match, it's not a message for MISTR.
 		if i == len(prefixes)-1 {
 			return
 		}
